@@ -9,6 +9,21 @@ https://upload.wikimedia.org/wikipedia/commons/1/10/Moffat_collection_system_pro
 
 SNOTEL API docs - https://wcc.sc.egov.usda.gov/awdbRestApi/v3/api-docs
 
+### Retrieving SNOTEL data
+
+```javascript
+const params = {
+    "stationTriplets" : "938:CO:SNTL",
+    "elements" : "WTEQ",
+    "duration": "DAILY",
+    "beginDate": "2022-04-02",
+    "endDate": "2026-08-19"
+}
+const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
+await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?' + queryParams).then(x => x.json())
+
+```
+
 ## Deployment
 
 GitHub pages deploys whatever is in ./docs
