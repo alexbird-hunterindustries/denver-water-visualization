@@ -8,3 +8,4 @@
 - [ ] what is the light gray band???
 - [ ] persist the station selection in the browser
 - [ ] choose stations by station groups??? what is the wd_list ids????
+- [ ] do we need some way to clean up the data (eliminate the wonky outliers)???
