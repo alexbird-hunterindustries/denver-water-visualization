@@ -32,7 +32,7 @@ main {
 #qr {
     width: 300px;
     img {
-        width: 100%
+        width: 100%;
     }
 }
 
