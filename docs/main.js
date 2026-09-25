@@ -16,22 +16,35 @@ async function goGetTheRecentStationData(currentYear, stationId) {
         .map(({year, month, value}) => [`${year}-${month}`, value]));
 }
 
-async function chartOneStationPrecipitationFor2026(stationMap) {
-    const upperColoradoWatershed = [602, 505, 1014, 970, 335, 415];
+async function fetchAndChartStationPrecipitationData(stationMap, currentYear) {
+    const watershedName = "Upper Colorado Watershed";
+    const watershedStationIds = [602, 505, 1014, 970, 335, 415];
     const xAxis = [
-        { year: 2025, month: 11 },
-        { year: 2025, month: 12 },
-        ...Array.from({ length: 9 }).map((_, i) => ({ year: 2026, month: i + 1}))
+        { year: currentYear - 1, month: 11 },
+        { year: currentYear - 1, month: 12 },
+        ...Array.from({ length: 9 }).map((_, i) => ({ year: currentYear, month: i + 1}))
     ].map(({ year, month }) => `${year}-${month}`)
-    const currentYear = 2026
-    const stationData = await goGetTheRecentStationData(currentYear, 938);
+
+    const allStationData =
+        await Promise.all(
+            watershedStationIds.map(stationId => goGetTheRecentStationData(currentYear, stationId))
+        )
+    const allStationDataByYearMonth = {}
+    allStationData.forEach(dataForOneStation => {
+        xAxis.forEach(yearMonth => {
+            allStationDataByYearMonth[yearMonth] = allStationDataByYearMonth[yearMonth] || []
+            allStationDataByYearMonth[yearMonth].push(dataForOneStation[yearMonth])
+        })
+
+    })
     const chartContext = document.querySelector('main #chart canvas');
     let cumulativeSum = 0;
-    const smoosh = thing => {
-        cumulativeSum += thing;
+    const smoosh = precipitationByStation => {
+        const average = precipitationByStation.reduce((a, b) => a + b, 0) / precipitationByStation.length
+        cumulativeSum += average;
         return cumulativeSum;
     }
-    const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: smoosh(stationData[yearMonth]) }));
+    const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: smoosh(allStationDataByYearMonth[yearMonth]) }));
     new Chart(chartContext, {
         type: 'line',
         data: {
@@ -42,8 +55,8 @@ async function chartOneStationPrecipitationFor2026(stationMap) {
         }
     });
     document.querySelector('#loading-indicator').remove()
-    document.querySelector('#chartTitle').innerHTML = "Upper Colorado Watershed";
-    document.querySelector('#chartSubtitle').innerHTML = "SNOTEL Stations: " + upperColoradoWatershed.map(x => stationMap[x]).join(", ");
+    document.querySelector('#chartTitle').innerHTML = watershedName;
+    document.querySelector('#chartSubtitle').innerHTML = "SNOTEL Stations: " + watershedStationIds.map(x => stationMap[x]).join(", ");
 }
 
 async function readStationMetadata() {
@@ -62,8 +75,9 @@ async function readStationMetadata() {
 }
 
 async function main() {
-    const stationMap = await readStationMetadata();
-    await chartOneStationPrecipitationFor2026(stationMap);
+    const stationNameMap = await readStationMetadata();
+    const currentYear = 2026;
+    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear);
 
 
 }
