@@ -14,3 +14,4 @@
 
 - [ ] choose stations by station groups??? what is the wd_list ids????
 - [ ] do we need some way to clean up the data (eliminate the wonky outliers)???
+- [ ] make it so that the user can configure station groups (list of staion ids) and use that to generate our visualization? (make it versitile for the report needs)
