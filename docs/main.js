@@ -11,7 +11,6 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
 
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://www.ncei.noaa.gov/access/services/data/v1?' + queryParams).then(x => x.json())
-    console.log("weather apiResponse:" + JSON.stringify(apiResponse));
 
     const monthlyMaxTemperature = {}
 
@@ -74,13 +73,28 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
             datasets: [
                 {
                     label: `Inches of Precipitation (${currentYear})`,
-                    data: chartData
+                    data: chartData,
+                    yAxisID: 'yPrecipitationAxis'
                 },
                 {
                     label: 'Average Temperature',
-                    data: weatherDataForChart
+                    data: weatherDataForChart,
+                    yAxisID: 'yTemperatureAxis'
                 }
             ]
+        },
+        options: {
+            scales: {
+                yPrecipitationAxis: {
+                    position: 'left'
+                },
+                yTemperatureAxis: {
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
         }
     });
     document.querySelector('#loading-indicator').remove()
@@ -103,7 +117,6 @@ async function readStationMetadata() {
 
 async function main() {
     const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(2026);
-    console.log(maxTemperatureByYearMonth)
     const stationNameMap = await readStationMetadata();
     const currentYear = 2026;
     await fetchAndChartStationPrecipitationData(stationNameMap, currentYear, maxTemperatureByYearMonth);
