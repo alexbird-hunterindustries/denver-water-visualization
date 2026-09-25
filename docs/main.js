@@ -28,7 +28,7 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
 async function goGetTheRecentStationData(currentYear, stationId) {
     const params = {
         "stationTriplets": `${stationId}:CO:SNTL`,
-        "elements": "PREC",
+        "elements": "WTEQ",
         "duration": "MONTHLY",
         "beginDate": "2022-04-02",
         "endDate": "2026-08-19"
@@ -72,7 +72,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
         data: {
             datasets: [
                 {
-                    label: `Inches of Precipitation (${currentYear})`,
+                    label: `Snow Pack (${currentYear})`,
                     data: chartData,
                     yAxisID: 'yPrecipitationAxis'
                 },
