@@ -1,7 +1,7 @@
 async function goGetTheRecentStationData(currentYear, stationId) {
     const params = {
         "stationTriplets": `${stationId}:CO:SNTL`,
-        "elements": "WTEQ",
+        "elements": "PREC",
         "duration": "MONTHLY",
         "beginDate": "2022-04-02",
         "endDate": "2026-08-19"
@@ -9,6 +9,7 @@ async function goGetTheRecentStationData(currentYear, stationId) {
 
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?' + queryParams).then(x => x.json())
+    console.log("apiResponse:" + JSON.stringify(apiResponse));
     const items = apiResponse[0].data[0].values;
 
     return Object.fromEntries(items
@@ -41,8 +42,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear) {
     let cumulativeSum = 0;
     const smoosh = precipitationByStation => {
         const average = precipitationByStation.reduce((a, b) => a + b, 0) / precipitationByStation.length
-        cumulativeSum += average;
-        return cumulativeSum;
+        return average;
     }
     const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: smoosh(allStationDataByYearMonth[yearMonth]) }));
     new Chart(chartContext, {
