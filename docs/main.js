@@ -1,3 +1,24 @@
+async function goGetTheRecentWeatherData(currentYear, stationId) {
+    const params = {
+        "dataset": "daily-summaries",
+        "stations": "USC00051071",
+        "startDate": "2025-11-01",
+        "endDate": "2026-09-30",
+        "dataTypes": "TMAX",
+        "format": "json",
+        "units": "standard"
+    };
+
+    const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
+    const apiResponse = await fetch('https://www.ncei.noaa.gov/access/services/data/v1?' + queryParams).then(x => x.json())
+    console.log("weather apiResponse:" + JSON.stringify(apiResponse));
+
+    // return Object.fromEntries(items
+    //     .filter(({year, month}) => year === currentYear || (year === currentYear - 1 && month > 10))
+    //     .map(({year, month, value}) => [`${year}-${month}`, value]));
+}
+
+
 async function goGetTheRecentStationData(currentYear, stationId) {
     const params = {
         "stationTriplets": `${stationId}:CO:SNTL`,
@@ -9,7 +30,6 @@ async function goGetTheRecentStationData(currentYear, stationId) {
 
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?' + queryParams).then(x => x.json())
-    console.log("apiResponse:" + JSON.stringify(apiResponse));
     const items = apiResponse[0].data[0].values;
 
     return Object.fromEntries(items
@@ -60,16 +80,15 @@ async function readStationMetadata() {
     }
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?' + queryParams).then(x => x.json())
-    console.log(apiResponse);
     const stationMap = Object.fromEntries(apiResponse
         .sort((lhs, rhs) => lhs.stationId - rhs.stationId)
         .map(({stationId, name}) => [stationId, name]))
-    console.log(stationMap);
 
     return stationMap;
 }
 
 async function main() {
+    await goGetTheRecentWeatherData(2026);
     const stationNameMap = await readStationMetadata();
     const currentYear = 2026;
     await fetchAndChartStationPrecipitationData(stationNameMap, currentYear);
