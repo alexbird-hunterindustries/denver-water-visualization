@@ -16,6 +16,12 @@ main {
     margin-bottom: calc(var(--footer-height) + 8px);
 }
 
+#chart {
+    width: 80vw;
+    height: 70vh;
+    margin: auto;
+}
+
 header {
     background-color: var(--color-background-accent);
     color: var(--color-foreground-accent);

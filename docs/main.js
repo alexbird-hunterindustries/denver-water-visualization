@@ -11,12 +11,20 @@ async function main() {
     const items = apiResponse[0].data[0].values
 
     const chartContext = document.querySelector('main #chart canvas');
-    const chartData = items.map(({ year, month, value }) => ({x: `${year}-${month}`, y: value }))
+    let cumulativeSum = 0;
+    const smoosh = thing => {
+        cumulativeSum += thing;
+        return cumulativeSum;
+    }
+    const currentYear = 2026;
+    const chartData = items
+        .filter(({ year, month }) => year === currentYear || (year === currentYear - 1 && month > 10))
+        .map(({ year, month, value }) => ({x: `${year}-${month}`, y: smoosh(value) }))
     new Chart(chartContext, {
         type: 'line',
         data: {
             datasets: [{
-                label: 'Stuff',
+                label: `Inches of Precipitation (${currentYear})`,
                 data: chartData
             }]
         }
