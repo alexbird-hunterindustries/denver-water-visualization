@@ -14,7 +14,9 @@ async function main() {
     console.log(items)
     const preTag = document.createElement('pre')
     preTag.innerHTML = JSON.stringify(items, null, 2)
-    document.body.appendChild(preTag)
+    const containerElement = document.querySelector('#main');
+    containerElement.innerHTML = '';
+    containerElement.appendChild(preTag)
 }
 
 main();
