@@ -26,16 +26,14 @@
 </head>
 <body>
     <header>
-        <h1>Visual Water</h1>
-        <div>A hackathon project by Kirjsten, Peter, and Alex for the Explore DDD Conference 2026</div>
+        <h2 id="chartTitle"></h2>
+        <h3 id="chartSubtitle"></h3>
     </header>
 
     <main>
         <section id="loading-indicator">
             Loading...
         </section>
-        <h2 id="chartTitle"></h2>
-        <h3 id="chartSubtitle"></h3>
         <section id="chart"><canvas></canvas></section>
         <section id="notes">
             <p>The precipitation is the cumulative average of the snow pack measurement for all stations</p>
@@ -47,6 +45,8 @@
     </main>
 
     <footer>
+        <h1>Visual Water</h1>
+        <div>A hackathon project by Kirjsten, Peter, and Alex for the Explore DDD Conference 2026</div>
         <div><a href="https://github.com/alexbird-hunterindustries/denver-water-visualization">Open source on GitHub</a></div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

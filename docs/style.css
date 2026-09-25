@@ -15,6 +15,7 @@ main {
     min-height: 100vh;
     margin-bottom: calc(var(--footer-height) + 8px);
     padding: 12px;
+    padding-top: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,6 +25,8 @@ main {
 #chart {
     max-width: 80vw;
     max-height: 70vh;
+    min-height: 50vh;
+    width: 100%;
 }
 
 header {
@@ -43,8 +46,13 @@ footer {
     text-align: center;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
+    gap: 24px;
+
+    h1 {
+        font-size: 1.2em;
+    }
 
     a {
         color: var(--color-foreground-accent);
