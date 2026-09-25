@@ -42,7 +42,7 @@ header {
     padding: 1em;
 }
 
-footer {
+.footer {
     background-color: var(--color-background-accent);
     color: var(--color-foreground-accent);
     height: var(--footer-height);
