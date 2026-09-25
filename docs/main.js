@@ -64,7 +64,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, year, maxTemper
         })
 
     })
-    const years = Array.from({ length: 2026 - 1990 + 1 }).map((_, i) => 1990 + i)
+    const years = Array.from({ length: 2026 - 2005 + 1 }).map((_, i) => 2005 + i)
     const dynamicHeader = chartParent.querySelector('.dynamic-header');
     dynamicHeader.innerHTML = `
         <span>${watershedName} (${year})</span>
