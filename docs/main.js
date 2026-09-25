@@ -14,9 +14,32 @@ async function main() {
     console.log(items)
     const preTag = document.createElement('pre')
     preTag.innerHTML = JSON.stringify(items, null, 2)
-    const containerElement = document.querySelector('#main');
+    const containerElement = document.querySelector('main #raw-data');
     containerElement.innerHTML = '';
     containerElement.appendChild(preTag)
+
+    const ctx = document.querySelector('main #chart canvas');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: '# of Votes',
+                data: [12, 19, 3, 5, 2, 3],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+
 }
 
 main();

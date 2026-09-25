@@ -10,7 +10,7 @@ body {
     margin: 0;
 }
 
-#main {
+main {
     background-color: var(--color-background-main);
     min-height: 100vh;
     margin-bottom: calc(var(--footer-height) + 8px);
