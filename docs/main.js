@@ -1,14 +1,16 @@
-async function chartOneStationPrecipitationFor2026() {
+async function chartOneStationPrecipitationFor2026(stationMap) {
+    const upperColoradoWatershed = [ 602, 505, 1014, 970, 335, 415 ];
     const params = {
         "stationTriplets": "938:CO:SNTL",
         "elements": "WTEQ",
         "duration": "MONTHLY",
         "beginDate": "2022-04-02",
         "endDate": "2026-08-19"
-    }
+    };
+
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?' + queryParams).then(x => x.json())
-    const items = apiResponse[0].data[0].values
+    const items = apiResponse[0].data[0].values;
 
     const chartContext = document.querySelector('main #chart canvas');
     let cumulativeSum = 0;
@@ -30,6 +32,8 @@ async function chartOneStationPrecipitationFor2026() {
         }
     });
     document.querySelector('#loading-indicator').remove()
+    document.querySelector('#chartTitle').innerHTML = "Upper Colorado Watershed";
+    document.querySelector('#chartSubtitle').innerHTML = "SNOTEL Stations: " + upperColoradoWatershed.map(x => stationMap[x]).join(", ");
 }
 
 async function readStationMetadata() {
@@ -39,20 +43,17 @@ async function readStationMetadata() {
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?' + queryParams).then(x => x.json())
     console.log(apiResponse);
-    const stationList = apiResponse
+    const stationMap = Object.fromEntries(apiResponse
         .sort((lhs, rhs) => lhs.stationId - rhs.stationId)
-        .map(({stationId, name}) => ("StationID: " + stationId + " - Name:" + name) )
-    console.log(stationList);
-    document.querySelector('#stations').innerHTML = `
-        <ul>
-            ${stationList.map(x => `<li>${x}</li>`).join('')}
-        </ul>
-    `;
+        .map(({stationId, name}) => [stationId, name]))
+    console.log(stationMap);
+
+    return stationMap;
 }
 
 async function main() {
-    await readStationMetadata();
-    await chartOneStationPrecipitationFor2026();
+    const stationMap = await readStationMetadata();
+    await chartOneStationPrecipitationFor2026(stationMap);
 
 
 }
