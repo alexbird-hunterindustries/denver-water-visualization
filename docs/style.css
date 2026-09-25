@@ -21,7 +21,7 @@ main {
     gap: 24px;
 }
 
-#chart {
+.chart {
     max-width: 80vw;
     max-height: 90vh;
     min-height: 50vh;

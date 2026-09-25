@@ -2,8 +2,8 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
     const params = {
         "dataset": "daily-summaries",
         "stations": "USC00051071",
-        "startDate": "2025-11-01",
-        "endDate": "2026-09-25",
+        "startDate": `${currentYear - 1}-11-01`,
+        "endDate": `${currentYear}-09-25`,
         "dataTypes": "TMAX",
         "format": "json",
         "units": "standard"
@@ -25,13 +25,13 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
 }
 
 
-async function goGetTheRecentStationData(currentYear, stationId) {
+async function goGetTheRecentStationData(yearToRead, stationId) {
     const params = {
         "stationTriplets": `${stationId}:CO:SNTL`,
         "elements": "WTEQ",
         "duration": "MONTHLY",
-        "beginDate": "2022-04-02",
-        "endDate": "2026-08-19"
+        "beginDate": `${yearToRead - 1}-11-01`,
+        "endDate": `${yearToRead}-09-30`
     };
 
     const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
@@ -39,22 +39,22 @@ async function goGetTheRecentStationData(currentYear, stationId) {
     const items = apiResponse[0].data[0].values;
 
     return Object.fromEntries(items
-        .filter(({year, month}) => year === currentYear || (year === currentYear - 1 && month > 10))
+        .filter(({year, month}) => year === yearToRead || (year === yearToRead - 1 && month > 10))
         .map(({year, month, value}) => [`${year}-${month.toString().padStart(2, "0")}`, value]));
 }
 
-async function fetchAndChartStationPrecipitationData(stationMap, currentYear, maxTemperatureByYearMonth) {
+async function fetchAndChartStationPrecipitationData(stationMap, year, maxTemperatureByYearMonth, chartParent) {
     const watershedName = "Upper Colorado Watershed";
     const watershedStationIds = [602, 505, 1014, 970, 335, 415];
     const xAxis = [
-        { year: currentYear - 1, month: 11 },
-        { year: currentYear - 1, month: 12 },
-        ...Array.from({ length: 9 }).map((_, i) => ({ year: currentYear, month: i + 1}))
+        { year: year - 1, month: 11 },
+        { year: year - 1, month: 12 },
+        ...Array.from({ length: 9 }).map((_, i) => ({ year: year, month: i + 1}))
     ].map(({ year, month }) => `${year}-${month.toString().padStart(2, "0")}`)
 
     const allStationData =
         await Promise.all(
-            watershedStationIds.map(stationId => goGetTheRecentStationData(currentYear, stationId))
+            watershedStationIds.map(stationId => goGetTheRecentStationData(year, stationId))
         )
     const allStationDataByYearMonth = {}
     allStationData.forEach(dataForOneStation => {
@@ -64,8 +64,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
         })
 
     })
-    const chartParent = document.querySelector('main #chart')
-    chartParent.querySelector('.date-header').textContent = `${watershedName} (${currentYear})`
+    chartParent.querySelector('.dynamic-header').textContent = `${watershedName} (${year})`
     const chartContext = chartParent.querySelector('canvas');
     const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: average(allStationDataByYearMonth[yearMonth]) }));
     const weatherDataForChart = xAxis.map(yearMonth => ({ x: yearMonth, y: average(maxTemperatureByYearMonth[yearMonth] || [])}))
@@ -99,7 +98,6 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
             }
         }
     });
-    document.querySelector('#loading-indicator').remove()
     document.querySelector('#chartTitle').innerHTML = watershedName;
     document.querySelector('#chartSubtitle').innerHTML = "SNOTEL Stations: " + watershedStationIds.map(x => stationMap[x]).join(", ");
 }
@@ -118,15 +116,21 @@ async function readStationMetadata() {
 }
 
 async function main() {
-    const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(2026);
     const stationNameMap = await readStationMetadata();
     const currentYear = 2026;
-    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear, maxTemperatureByYearMonth);
+    const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(currentYear);
+    const mainChart = document.querySelector('main #chart-1')
+    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear, maxTemperatureByYearMonth, mainChart);
 
+    const comparisonChart = document.querySelector('main #chart-2')
+    const comparisonYear = 2020
+    const maxTemperatureToCompareByYearMonth = await goGetTheRecentWeatherData(comparisonYear);
+    await fetchAndChartStationPrecipitationData(stationNameMap, comparisonYear, maxTemperatureToCompareByYearMonth, comparisonChart);
 
+    document.querySelector('#loading-indicator').remove()
 }
 
-main();
+document.addEventListener('DOMContentLoaded', main)
 
 function average(precipitationByStation) {
     return precipitationByStation.reduce((a, b) => a + b, 0) / precipitationByStation.length;
