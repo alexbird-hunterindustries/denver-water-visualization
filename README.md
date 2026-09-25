@@ -2,6 +2,11 @@
 
 Deployed at https://visualwater.huntersoftware.team
 
+## Authors
+- Kirjsten Blodgett <kirjsten.blodgett@hunter.global>
+- Alex Bird <alex.bird@hunter.global>
+- Pete J
+
 ## Libraries
 
 - Charting: [chart.js](https://www.chartjs.org/docs/latest/getting-started/) (MIT license)
