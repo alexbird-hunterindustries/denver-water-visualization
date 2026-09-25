@@ -64,7 +64,9 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
         })
 
     })
-    const chartContext = document.querySelector('main #chart canvas');
+    const chartParent = document.querySelector('main #chart')
+    chartParent.querySelector('.date-header').textContent = `${watershedName} (${currentYear})`
+    const chartContext = chartParent.querySelector('canvas');
     const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: average(allStationDataByYearMonth[yearMonth]) }));
     const weatherDataForChart = xAxis.map(yearMonth => ({ x: yearMonth, y: average(maxTemperatureByYearMonth[yearMonth] || [])}))
     new Chart(chartContext, {
@@ -72,7 +74,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear, ma
         data: {
             datasets: [
                 {
-                    label: `Snow Pack (${currentYear})`,
+                    label: `Snow Pack`,
                     data: chartData,
                     yAxisID: 'yPrecipitationAxis'
                 },
