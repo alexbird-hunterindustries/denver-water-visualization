@@ -14,6 +14,7 @@ main {
     background-color: var(--color-background-main);
     min-height: 100vh;
     margin-bottom: calc(var(--footer-height) + 8px);
+    padding: 12px;
 }
 
 #chart {
