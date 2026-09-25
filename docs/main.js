@@ -39,12 +39,7 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear) {
 
     })
     const chartContext = document.querySelector('main #chart canvas');
-    let cumulativeSum = 0;
-    const smoosh = precipitationByStation => {
-        const average = precipitationByStation.reduce((a, b) => a + b, 0) / precipitationByStation.length
-        return average;
-    }
-    const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: smoosh(allStationDataByYearMonth[yearMonth]) }));
+    const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: average(allStationDataByYearMonth[yearMonth]) }));
     new Chart(chartContext, {
         type: 'line',
         data: {
@@ -83,3 +78,7 @@ async function main() {
 }
 
 main();
+
+function average(precipitationByStation) {
+    return precipitationByStation.reduce((a, b) => a + b, 0) / precipitationByStation.length;
+}
