@@ -1,7 +1,7 @@
-async function main() {
+async function chartOneStationPrecipitationFor2026() {
     const params = {
-        "stationTriplets" : "938:CO:SNTL",
-        "elements" : "WTEQ",
+        "stationTriplets": "938:CO:SNTL",
+        "elements": "WTEQ",
         "duration": "MONTHLY",
         "beginDate": "2022-04-02",
         "endDate": "2026-08-19"
@@ -18,8 +18,8 @@ async function main() {
     }
     const currentYear = 2026;
     const chartData = items
-        .filter(({ year, month }) => year === currentYear || (year === currentYear - 1 && month > 10))
-        .map(({ year, month, value }) => ({x: `${year}-${month}`, y: smoosh(value) }))
+        .filter(({year, month}) => year === currentYear || (year === currentYear - 1 && month > 10))
+        .map(({year, month, value}) => ({x: `${year}-${month}`, y: smoosh(value)}))
     new Chart(chartContext, {
         type: 'line',
         data: {
@@ -30,6 +30,29 @@ async function main() {
         }
     });
     document.querySelector('#loading-indicator').remove()
+}
+
+async function readStationMetadata() {
+    const params = {
+        "stationTriplets": "*:CO:SNTL"
+    }
+    const queryParams = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&')
+    const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations?' + queryParams).then(x => x.json())
+    console.log(apiResponse);
+    const stationList = apiResponse
+        .sort((lhs, rhs) => lhs.stationId - rhs.stationId)
+        .map(({stationId, name}) => ("StationID: " + stationId + " - Name:" + name) )
+    console.log(stationList);
+    document.querySelector('#stations').innerHTML = `
+        <ul>
+            ${stationList.map(x => `<li>${x}</li>`).join('')}
+        </ul>
+    `;
+}
+
+async function main() {
+    await readStationMetadata();
+    await chartOneStationPrecipitationFor2026();
 
 
 }
