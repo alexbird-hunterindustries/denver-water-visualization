@@ -43,7 +43,7 @@ async function goGetTheRecentStationData(yearToRead, stationId) {
         .map(({year, month, value}) => [`${year}-${month.toString().padStart(2, "0")}`, value]));
 }
 
-async function fetchAndChartStationPrecipitationData(stationMap, year, maxTemperatureByYearMonth, chartParent) {
+async function fetchAndChartStationPrecipitationData(stationMap, year, maxTemperatureByYearMonth, chartParent, onYearChange) {
     const watershedName = "Upper Colorado Watershed";
     const watershedStationIds = [602, 505, 1014, 970, 335, 415];
     const xAxis = [
@@ -64,8 +64,23 @@ async function fetchAndChartStationPrecipitationData(stationMap, year, maxTemper
         })
 
     })
-    chartParent.querySelector('.dynamic-header').textContent = `${watershedName} (${year})`
-    const chartContext = chartParent.querySelector('canvas');
+    const years = Array.from({ length: 2026 - 1990 + 1 }).map((_, i) => 1990 + i)
+    const dynamicHeader = chartParent.querySelector('.dynamic-header');
+    dynamicHeader.innerHTML = `
+        <span>${watershedName} (${year})</span>
+        <select name="year-picker" class="year-picker">
+          ${years.map(y => `<option value="${y}" ${y === year ? 'selected': ''}>${y}</option>`).join('')}
+        </select>
+    `;
+    const yearPicker = dynamicHeader.querySelector('.year-picker');
+    yearPicker.addEventListener('change', () => {
+        const newYear = Number(yearPicker.value);
+        onYearChange(newYear)
+    })
+    chartParent.querySelector('canvas').remove();
+    const newCanvas = document.createElement('canvas');
+    chartParent.appendChild(newCanvas)
+    const chartContext = newCanvas;
     const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: average(allStationDataByYearMonth[yearMonth]) }));
     const weatherDataForChart = xAxis.map(yearMonth => ({ x: yearMonth, y: average(maxTemperatureByYearMonth[yearMonth] || [])}))
     new Chart(chartContext, {
@@ -118,16 +133,19 @@ async function readStationMetadata() {
 async function main() {
     const stationNameMap = await readStationMetadata();
     const currentYear = 2026;
-    const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(currentYear);
     const mainChart = document.querySelector('main #chart-1')
-    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear, maxTemperatureByYearMonth, mainChart);
+    await sauce(currentYear, stationNameMap, mainChart)
 
     const comparisonChart = document.querySelector('main #chart-2')
     const comparisonYear = 2020
-    const maxTemperatureToCompareByYearMonth = await goGetTheRecentWeatherData(comparisonYear);
-    await fetchAndChartStationPrecipitationData(stationNameMap, comparisonYear, maxTemperatureToCompareByYearMonth, comparisonChart);
+    await sauce(comparisonYear, stationNameMap, comparisonChart)
 
     document.querySelector('#loading-indicator').remove()
+}
+
+async function sauce(year, stationNameMap, chart) {
+    const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(year);
+    await fetchAndChartStationPrecipitationData(stationNameMap, year, maxTemperatureByYearMonth, chart, year => sauce(year, stationNameMap, chart));
 }
 
 document.addEventListener('DOMContentLoaded', main)
