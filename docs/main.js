@@ -3,7 +3,7 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
         "dataset": "daily-summaries",
         "stations": "USC00051071",
         "startDate": "2025-11-01",
-        "endDate": "2026-09-30",
+        "endDate": "2026-09-25",
         "dataTypes": "TMAX",
         "format": "json",
         "units": "standard"
@@ -13,9 +13,16 @@ async function goGetTheRecentWeatherData(currentYear, stationId) {
     const apiResponse = await fetch('https://www.ncei.noaa.gov/access/services/data/v1?' + queryParams).then(x => x.json())
     console.log("weather apiResponse:" + JSON.stringify(apiResponse));
 
-    // return Object.fromEntries(items
-    //     .filter(({year, month}) => year === currentYear || (year === currentYear - 1 && month > 10))
-    //     .map(({year, month, value}) => [`${year}-${month}`, value]));
+    const monthlyMaxTemperature = {}
+
+    apiResponse.forEach(statisticsForDay => {
+        const date = statisticsForDay.DATE;
+        const maximumTemperature = Number(statisticsForDay.TMAX);
+        const yearMonth = date.split('-').slice(0, 2).join('-')
+        monthlyMaxTemperature[yearMonth] = monthlyMaxTemperature[yearMonth] || []
+        monthlyMaxTemperature[yearMonth].push(maximumTemperature)
+    });
+    return monthlyMaxTemperature;
 }
 
 
@@ -34,17 +41,17 @@ async function goGetTheRecentStationData(currentYear, stationId) {
 
     return Object.fromEntries(items
         .filter(({year, month}) => year === currentYear || (year === currentYear - 1 && month > 10))
-        .map(({year, month, value}) => [`${year}-${month}`, value]));
+        .map(({year, month, value}) => [`${year}-${month.toString().padStart(2, "0")}`, value]));
 }
 
-async function fetchAndChartStationPrecipitationData(stationMap, currentYear) {
+async function fetchAndChartStationPrecipitationData(stationMap, currentYear, maxTemperatureByYearMonth) {
     const watershedName = "Upper Colorado Watershed";
     const watershedStationIds = [602, 505, 1014, 970, 335, 415];
     const xAxis = [
         { year: currentYear - 1, month: 11 },
         { year: currentYear - 1, month: 12 },
         ...Array.from({ length: 9 }).map((_, i) => ({ year: currentYear, month: i + 1}))
-    ].map(({ year, month }) => `${year}-${month}`)
+    ].map(({ year, month }) => `${year}-${month.toString().padStart(2, "0")}`)
 
     const allStationData =
         await Promise.all(
@@ -60,13 +67,20 @@ async function fetchAndChartStationPrecipitationData(stationMap, currentYear) {
     })
     const chartContext = document.querySelector('main #chart canvas');
     const chartData = xAxis.map(yearMonth => ({x: yearMonth, y: average(allStationDataByYearMonth[yearMonth]) }));
+    const weatherDataForChart = xAxis.map(yearMonth => ({ x: yearMonth, y: average(maxTemperatureByYearMonth[yearMonth] || [])}))
     new Chart(chartContext, {
         type: 'line',
         data: {
-            datasets: [{
-                label: `Inches of Precipitation (${currentYear})`,
-                data: chartData
-            }]
+            datasets: [
+                {
+                    label: `Inches of Precipitation (${currentYear})`,
+                    data: chartData
+                },
+                {
+                    label: 'Average Temperature',
+                    data: weatherDataForChart
+                }
+            ]
         }
     });
     document.querySelector('#loading-indicator').remove()
@@ -88,10 +102,11 @@ async function readStationMetadata() {
 }
 
 async function main() {
-    await goGetTheRecentWeatherData(2026);
+    const maxTemperatureByYearMonth = await goGetTheRecentWeatherData(2026);
+    console.log(maxTemperatureByYearMonth)
     const stationNameMap = await readStationMetadata();
     const currentYear = 2026;
-    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear);
+    await fetchAndChartStationPrecipitationData(stationNameMap, currentYear, maxTemperatureByYearMonth);
 
 
 }
