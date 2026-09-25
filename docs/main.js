@@ -10,19 +10,9 @@ async function main() {
     const apiResponse = await fetch('https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data?' + queryParams).then(x => x.json())
     const items = apiResponse[0].data[0].values
 
-    console.log(items)
-    const preTag = document.createElement('pre')
-    preTag.innerHTML = JSON.stringify(items, null, 2)
-    const containerElement = document.querySelector('main #raw-data');
-    containerElement.innerHTML = '';
-    containerElement.appendChild(preTag)
-
-    const ctx = document.querySelector('main #chart canvas');
-
-    items.map(({ year, month, value }) => console.log({ year, month, value }))
+    const chartContext = document.querySelector('main #chart canvas');
     const chartData = items.map(({ year, month, value }) => ({x: `${year}-${month}`, y: value }))
-
-    new Chart(ctx, {
+    new Chart(chartContext, {
         type: 'line',
         data: {
             datasets: [{
@@ -31,6 +21,7 @@ async function main() {
             }]
         }
     });
+    document.querySelector('#loading-indicator').remove()
 
 
 }
